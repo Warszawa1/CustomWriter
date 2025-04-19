@@ -5,6 +5,7 @@
 //  Created by Ire  Av on 15/4/25.
 //
 
+
 import SwiftUI
 import CoreNFC
 
@@ -13,30 +14,9 @@ class NFCWriter: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
     @Published var isWriting = false
     
     private var session: NFCNDEFReaderSession?
-    private var urlToWrite: URL?
-    
-//    func writeURL(_ url: URL) {
-//        self.urlToWrite = url
-//        
-//        guard NFCNDEFReaderSession.readingAvailable else {
-//            message = "NFC not available on this device"
-//            return
-//        }
-//        
-//        session = NFCNDEFReaderSession(delegate: self, queue: nil, invalidateAfterFirstRead: false)
-//        session?.alertMessage = "Hold your iPhone near an NFC tag to write"
-//        session?.begin()
-//        
-//        isWriting = true
-//        message = "Scanning for tag..."
-//    }
     
     func writeURLForBackgroundReading(_ url: URL) {
-        // Create a well-formed universal link or NFC-specific URL
-//        let backgroundReadableURL = URL(string: "https://presentcup.com/activate?location=cafe&duration=30")!
-        self.urlToWrite = url
-        
-        // Rest of your existing code
+        // Instead of writing a URL, we'll create a custom MIME record
         guard NFCNDEFReaderSession.readingAvailable else {
             message = "NFC not available on this device"
             return
@@ -79,15 +59,16 @@ class NFCWriter: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
         }
     }
     
-    // Required delegate method when tags are detected
+    // Required delegate method when NDEF messages are detected
     func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
-        // Not used for writing
+        // This method is required by the protocol even though we're using didDetect tags for writing
+        // We can leave it empty since we're not using this for our functionality
     }
     
     // Method to handle tag detection for writing
     func readerSession(_ session: NFCNDEFReaderSession, didDetect tags: [NFCNDEFTag]) {
         // Get the first tag
-        guard let url = urlToWrite, let tag = tags.first else {
+        guard let tag = tags.first else {
             session.invalidate(errorMessage: "No valid tag found")
             return
         }
@@ -114,25 +95,31 @@ class NFCWriter: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
                 case .readOnly:
                     session.invalidate(errorMessage: "Tag is read-only")
                 case .readWrite:
-                    // Create URL record
-                    guard let record = NFCNDEFPayload.wellKnownTypeURIPayload(url: url) else {
-                        session.invalidate(errorMessage: "Invalid URL format")
-                        return
-                    }
-                    
-                    // Create the NDEF message with the record
-                    let message = NFCNDEFMessage(records: [record])
+                    // Create both records on the same tag
+                    let urlRecord = NFCNDEFPayload.wellKnownTypeURIPayload(url: URL(string: "presentcup://focus")!)!
+
+                    let mimeType = "application/com.ireav.present"
+                    let mimePayload = "toggle_focus".data(using: .utf8)!
+                    let mimeRecord = NFCNDEFPayload(
+                        format: .media,
+                        type: mimeType.data(using: .utf8)!,
+                        identifier: Data(),
+                        payload: mimePayload
+                    )
+
+                    // Create message with both records
+                    let message = NFCNDEFMessage(records: [urlRecord, mimeRecord])
                     
                     // Write the message to the tag
                     tag.writeNDEF(message) { error in
                         if let error = error {
                             session.invalidate(errorMessage: "Write failed: \(error.localizedDescription)")
                         } else {
-                            session.alertMessage = "Successfully wrote URL to tag!"
+                            session.alertMessage = "Successfully wrote to tag for your app!"
                             session.invalidate()
                             
                             DispatchQueue.main.async {
-                                self.message = "Successfully wrote to tag!"
+                                self.message = "Successfully wrote the NFC tag!"
                                 UserDefaults.standard.set(Date(), forKey: "lastSuccessTimestamp")
                             }
                         }
