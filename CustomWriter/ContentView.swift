@@ -7,11 +7,8 @@
 
 import SwiftUI
 
-
 struct ContentView: View {
     @StateObject private var nfcWriter = NFCWriter()
-    @State private var duration = "30"
-    @FocusState private var isDurationFocused: Bool
     
     var body: some View {
         GeometryReader { geometry in
@@ -37,35 +34,9 @@ struct ContentView: View {
                         .frame(width: 70, height: 70)
                         .foregroundColor(Color.blue)
                     
-                    // Flexible space between icon and duration
-                    Spacer()
-                        .frame(height: geometry.size.height * 0.12)
-                    
-                    // Duration field
-                    VStack(spacing: 15) {
-                        Text("Session Duration")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                        
-                        HStack {
-                            TextField("30", text: $duration)
-                                .padding()
-                                .background(Color(.systemGray6))
-                                .cornerRadius(10)
-                                .keyboardType(.numberPad)
-                                .multilineTextAlignment(.center)
-                                .frame(width: 100)
-                                .focused($isDurationFocused)
-                            
-                            Text("minutes")
-                                .font(.headline)
-                                .foregroundColor(.gray)
-                        }
-                    }
-                    
                     // Status message
                     Spacer()
-                        .frame(height: geometry.size.height * 0.08)
+                        .frame(height: geometry.size.height * 0.2)
                     
                     Text(nfcWriter.message)
                         .font(.headline)
@@ -75,15 +46,12 @@ struct ContentView: View {
                     
                     // Flexible space before button
                     Spacer()
-                        .frame(height: geometry.size.height * 0.15)
+                        .frame(height: geometry.size.height * 0.2)
                     
                     // Write button
                     Button(action: {
-                        hideKeyboard()
-                        let urlString = "presentcup://focus?location=cafe&duration=\(duration)"
-                        if let url = URL(string: urlString) {
-                            nfcWriter.writeURLForBackgroundReading(url)  // Make sure this method exists in your NFCWriter class
-                        }
+                        let url = URL(string: "presentcup://focus")!
+                        nfcWriter.writeURLForBackgroundReading(url)
                     }) {
                         Text("Write to NFC Tag")
                             .font(.title3)
@@ -104,24 +72,10 @@ struct ContentView: View {
             }
         }
         .background(Color.black.edgesIgnoringSafeArea(.all))
-        .onTapGesture {
-            hideKeyboard()
-        }
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Done") {
-                    hideKeyboard()
-                }
-            }
-        }
-    }
-    
-    private func hideKeyboard() {
-        isDurationFocused = false
     }
 }
- 
+
 #Preview {
     ContentView()
 }
+
