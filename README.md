@@ -6,21 +6,21 @@ CustomWriter is a specialized NFC tag writing utility designed to create tags th
 <table>
   <tr>
     <td>
-      <img src="screenshots/screen1.png" alt="Initial Screen" width="400"/>
+      <img src="screenshots/img_2554.png" alt="Initial Screen" width="400"/>
       <p align="center">Initial Screen</p>
     </td>
     <td>
-      <img src="screenshots/screen2.png" alt="NFC Scanning" width="400"/>
+      <img src="screenshots/img_2556.png" alt="NFC Scanning" width="400"/>
       <p align="center">NFC Scanning</p>
     </td>
   </tr>
   <tr>
     <td>
-      <img src="screenshots/screen3.png" alt="Writing Complete" width="400"/>
+      <img src="screenshots/img_2559.png" alt="Writing Complete" width="400"/>
       <p align="center">Writing Complete</p>
     </td>
     <td>
-      <img src="screenshots/screen4.png" alt="Tag Usage" width="400"/>
+      <img src="screenshots/img_2557.png" alt="Tag Usage" width="400"/>
       <p align="center">Tag Usage</p>
     </td>
   </tr>
